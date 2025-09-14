@@ -1,0 +1,55 @@
+name: ABAP CI (Pull + AUnit)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  # 👇 change to your real package name (where ZCL_UTIL & tests live)
+  ABAP_PACKAGE: ZPOC_MF
+  # Optional: ATC variant if you add ATC later
+  ATC_VARIANT: DEFAULT
+
+jobs:
+  pull-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (pipeline repo only)
+        uses: actions/checkout@v4
+
+      - name: Write ABAP service key
+        run: echo '${{ secrets.ABAP_SERVICE_KEY_JSON }}' > service-key.json
+
+      - name: Pull sources into ABAP Environment (activation happens here)
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            ppiper/piper \
+            abapEnvironmentPullGitRepo \
+              --serviceKey /workspace/service-key.json \
+              --repositoryUrl "${{ secrets.ABAP_GIT_REPO_URL }}" \
+              --branchName   "${{ secrets.ABAP_GIT_BRANCH }}"
+
+      - name: Run ABAP Unit tests
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            ppiper/piper \
+            abapEnvironmentRunAUnitTest \
+              --serviceKey /workspace/service-key.json \
+              --abapPackage "${{ env.ABAP_PACKAGE }}"
+
+      # (Optional) Add ATC as a quality gate
+      # - name: Run ATC checks
+      #   run: |
+      #     docker run --rm \
+      #       -v "$PWD:/workspace" \
+      #       ppiper/piper \
+      #       abapEnvironmentRunATCCheck \
+      #         --serviceKey /workspace/service-key.json \
+      #         --abapPackage "${{ env.ABAP_PACKAGE }}" \
+      #         --atcConfig   "${{ env.ATC_VARIANT }}"
