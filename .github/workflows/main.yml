@@ -1,4 +1,4 @@
-name: ABAP CI (Pull + AUnit via Piper Action)
+name: ABAP CI (Trial OAuth keys: Clone + Pull + AUnit)
 
 on:
   push:
@@ -7,34 +7,46 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-env:
-  ABAP_PACKAGE: Z_YOUR_PACKAGE        # <-- change to your package
-  ATC_VARIANT: DEFAULT                # (unused here; add later if you run ATC)
-
 jobs:
-  pull-and-test:
+  clone-and-pull:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Write ABAP service key
-        run: echo '${{ secrets.ABAP_SERVICE_KEY_JSON }}' > service-key.json
+      # --- CLONE (idempotent): creates/updates the BYOG repo in ABAP system and stores GitHub creds there ---
+      - name: Clone BYOG repo into ABAP Environment (trial OAuth)
+        uses: SAP/project-piper-action@v1.22.6
+        with:
+          step-name: abapEnvironmentCloneGitRepo
+          # Pass the full service key JSON (OAuth) directly:
+          flags: >
+            --parametersJSON '${{ secrets.SC0948_SERVICE_KEY_JSON }}'
+            --repositoryName "${{ secrets.SC_REPOSITORY_NAME }}"
+            --branchName "${{ secrets.SC_BRANCH }}"
+            --byogUsername "${{ secrets.BYOG_USERNAME }}"
+            --byogPassword "${{ secrets.BYOG_TOKEN }}"
 
-      # === BUILD (ABAP-style): Pull repo into ABAP Env (activation happens in-system) ===
-      - name: Pull sources into ABAP Environment
+      # --- PULL latest commit (activation/compile happens in ABAP system on import) ---
+      - name: Pull latest from Git (trial OAuth)
         uses: SAP/project-piper-action@v1.22.6
         with:
           step-name: abapEnvironmentPullGitRepo
           flags: >
-            --serviceKey service-key.json
-            --repositoryUrl "${{ secrets.ABAP_GIT_REPO_URL }}"
-            --branchName   "${{ secrets.ABAP_GIT_BRANCH }}"
+            --parametersJSON '${{ secrets.SC0948_SERVICE_KEY_JSON }}'
+            --repositoryName "${{ secrets.SC_REPOSITORY_NAME }}"
+            --branchName "${{ secrets.SC_BRANCH }}"
 
-      # === TEST: Run ABAP Unit on your package ===
-      - name: Run ABAP Unit tests
+  aunit:
+    needs: clone-and-pull
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Run ABAP Unit on your package (executed INSIDE the ABAP system) ---
+      - name: Run ABAP Unit (trial OAuth)
         uses: SAP/project-piper-action@v1.22.6
         with:
           step-name: abapEnvironmentRunAUnitTest
           flags: >
-            --serviceKey service-key.json
-            --abapPackage "${{ env.ABAP_PACKAGE }}"
+            --parametersJSON '${{ secrets.SC0735_SERVICE_KEY_JSON }}'
+            --abapPackage "${{ secrets.ABAP_PACKAGE }}"
