@@ -1,4 +1,4 @@
-name: ABAP CI (Trial OAuth keys: Clone + Pull + AUnit)
+name: ABAP CI
 
 on:
   push:
