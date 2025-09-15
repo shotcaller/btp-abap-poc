@@ -13,6 +13,6 @@ ENDCLASS.
 
 CLASS zcl_mf_sample IMPLEMENTATION.
     METHOD if_oo_adt_classrun~main.
-        out->write( |Hello from ABAP Environment Trial - ZCL_MF_SAMPLE.| ).
+        out->write( |Hello from ABAP Environment Trial - ZCL_MF_SAMPLE. New Commit!| ).
     ENDMETHOD.
 ENDCLASS.
