@@ -20,6 +20,7 @@ jobs:
           step-name: abapEnvironmentCloneGitRepo
           # Pass the full service key JSON (OAuth) directly:
           flags: >
+            --host '${{ secrets.ABAP_HOST }}'
             --parametersJSON '${{ secrets.SC0948_SERVICE_KEY_JSON }}'
             --repositoryName "${{ secrets.SC_REPOSITORY_NAME }}"
             --branchName "${{ secrets.SC_BRANCH }}"
@@ -32,6 +33,7 @@ jobs:
         with:
           step-name: abapEnvironmentPullGitRepo
           flags: >
+            --host '${{ secrets.ABAP_HOST }}'
             --parametersJSON '${{ secrets.SC0948_SERVICE_KEY_JSON }}'
             --repositoryName "${{ secrets.SC_REPOSITORY_NAME }}"
             --branchName "${{ secrets.SC_BRANCH }}"
@@ -48,5 +50,6 @@ jobs:
         with:
           step-name: abapEnvironmentRunAUnitTest
           flags: >
+            --host '${{ secrets.ABAP_HOST }}'
             --parametersJSON '${{ secrets.SC0735_SERVICE_KEY_JSON }}'
             --abapPackage "${{ secrets.ABAP_PACKAGE }}"
