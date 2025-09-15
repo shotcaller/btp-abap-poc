@@ -1,4 +1,4 @@
-name: ABAP CICD
+name: ABAP CI
 
 on:
   push:
