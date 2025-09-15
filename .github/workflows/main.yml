@@ -20,7 +20,7 @@ jobs:
           step-name: abapEnvironmentCloneGitRepo
           # Pass the full service key JSON (OAuth) directly:
           flags: >
-            --host '${{ secrets.ABAP_HOST }}'
+            --host 'f3cc5dd0-460a-4857-8feb-b1d471dd9dbc.abap.us10.hana.ondemand.com'
             --parametersJSON '${{ secrets.SC0948_SERVICE_KEY_JSON }}'
             --repositoryName "${{ secrets.SC_REPOSITORY_NAME }}"
             --branchName "${{ secrets.SC_BRANCH }}"
